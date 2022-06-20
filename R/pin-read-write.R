@@ -33,9 +33,10 @@
 #'
 #' @export
 vetiver_pin_write <- function(board, vetiver_model) {
+    packaged_model <- model_package(vetiver_model$model)
     pins::pin_write(
         board = board,
-        x = list(model = vetiver_model$model,
+        x = list(model = packaged_model,
                  ptype = vetiver_model$ptype,
                  required_pkgs = vetiver_model$metadata$required_pkgs),
         name = vetiver_model$model_name,
@@ -63,8 +64,18 @@ vetiver_pin_read <- function(board, name, version = NULL) {
 
     ## TODO: add subset of renv hash checking
 
+    if (exists('model_class', meta$user)) {
+        # Use the generic function registered with the model class. Generics
+        # will not work because pinned$model doesn't have the class attribute
+        # (e.g. model in a non-RDS format like H2O)
+        function_name <- paste0('model_unpackage.', meta$user$model_class)
+        unpackaged_model <- do.call(function_name, list(model = pinned$model))
+    } else {
+        unpackaged_model <- pinned$model
+    }
+
     new_vetiver_model(
-        model = pinned$model,
+        model = unpackaged_model,
         model_name = name,
         description = meta$description,
         metadata = vetiver_meta(
