@@ -34,10 +34,11 @@ model_package_h2o_default <- function(model) {
     raw_model <- readBin(fd, what = 'raw', n = file_size, endian = 'little')
     close(fd)
     file.remove(f)
-    raw_model
+    structure(raw_model, class = class(model))
 }
 
 model_unpackage_h2o_default <- function(model) {
+    model <- structure(model, class = NULL) # get the original object
     f <- tempfile()
     fd <- file(f, 'wb')
     writeBin(model, con = fd, endian = 'little')

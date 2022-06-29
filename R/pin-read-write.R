@@ -64,16 +64,7 @@ vetiver_pin_read <- function(board, name, version = NULL) {
 
     ## TODO: add subset of renv hash checking
 
-    if (exists('model_class', meta$user)) {
-        # Use the generic function registered with the model class. Generics
-        # will not work because pinned$model doesn't have the class attribute
-        # (e.g. model in a non-RDS format like H2O)
-        function_name <- paste0('model_unpackage.', meta$user$model_class)
-        unpackaged_model <- do.call(function_name, list(model = pinned$model))
-    } else {
-        unpackaged_model <- pinned$model
-    }
-
+    unpackaged_model <- model_unpackage(pinned$model)
     new_vetiver_model(
         model = unpackaged_model,
         model_name = name,
