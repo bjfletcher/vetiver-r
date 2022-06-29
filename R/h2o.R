@@ -1,75 +1,32 @@
-# H2OMultinomialModel
+# a list of other H2O model classes we may want to add:
+# H2OAutoEncoderModel
+# H2OBinomialModel
+# H2OBinomialUpliftModel
+# H2OClusteringModel
+# H2ODimReductionModel
+# H2OOrdinalModel
+# H2OWordEmbeddingModel
 
-#' @rdname vetiver_create_description
-#' @export
-vetiver_create_description.H2OMultinomialModel <- function(model) {
-    # FIXME: implement
-    "h2o desc here"
+vetiver_create_description_h2o_default <- function(model) {
+    paste('A H2O', class(model), 'model')
 }
 
-#' @rdname vetiver_create_meta
-#' @export
-vetiver_create_meta.H2OMultinomialModel <- function(model, metadata) {
+vetiver_create_meta_h2o_default <- function(model, metadata) {
     metadata$model_class = class(model)
     vetiver_meta(metadata, required_pkgs = c("h2o"))
 }
 
-#' @rdname vetiver_create_ptype
-#' @export
-vetiver_ptype.H2OMultinomialModel <- function(model, ...) {
-    # FIXME: implement
+vetiver_ptype_h2o_default <- function(model, ...) {
+    rlang::check_dots_used()
+    dots <- list(...)
+    check_ptype_data(dots)
+    dots$ptype_data |>
+        dplyr::select(h2o::getParms(model)$x) |>
+        vctrs::vec_ptype() |>
+        tibble::as_tibble()
 }
 
-#' @rdname model_package
-#' @export
-model_package.H2OMultinomialModel <- function(model) {
-    #FIXME: 
-}
-
-#' @rdname model_unpackage
-#' @export
-model_unpackage.H2OMultinomialModel <- function(model) {
-    #FIXME: 
-}
-
-#' @rdname handler_startup
-#' @export
-handler_startup.H2OMultinomialModel <- function(vetiver_model) {
-    attach_pkgs(vetiver_model$metadata$required_pkgs)
-}
-
-#' @rdname handler_startup
-#' @export
-handler_predict.H2OMultinomialModel <- function(vetiver_model, ...) {
-    # FIXME: check if we need to convert input types (e.g. "1" to 1, "true" to T, etc.)
-    # use h2o predict function woohoo :)
-}
-
-# H2ORegressionModel
-
-#' @rdname vetiver_create_description
-#' @export
-vetiver_create_description.H2ORegressionModel <- function(model) {
-    # FIXME: implement
-    "h2o desc here"
-}
-
-#' @rdname vetiver_create_meta
-#' @export
-vetiver_create_meta.H2ORegressionModel <- function(model, metadata) {
-    metadata$model_class = class(model)
-    vetiver_meta(metadata, required_pkgs = c("h2o"))
-}
-
-#' @rdname vetiver_create_ptype
-#' @export
-vetiver_ptype.H2ORegressionModel <- function(model, ...) {
-    # FIXME: implement
-}
-
-#' @rdname model_package
-#' @export
-model_package.H2ORegressionModel <- function(model) {
+model_package_h2o_default <- function(model) {
     f <- tempfile()
     h2o::h2o.saveModel(model, path = dirname(f), filename = basename(f))
     file_size <- file.info(f)$size
@@ -80,9 +37,7 @@ model_package.H2ORegressionModel <- function(model) {
     raw_model
 }
 
-#' @rdname model_unpackage
-#' @export
-model_unpackage.H2ORegressionModel <- function(model) {
+model_unpackage_h2o_default <- function(model) {
     f <- tempfile()
     fd <- file(f, 'wb')
     writeBin(model, con = fd, endian = 'little')
@@ -92,24 +47,106 @@ model_unpackage.H2ORegressionModel <- function(model) {
     loaded_model
 }
 
+handler_startup_h2o_default <- function(vetiver_model) {
+    attach_pkgs(vetiver_model$metadata$required_pkgs)
+    h2o::h2o.init()
+}
+
+handler_predict_h2o_default <- function(vetiver_model, ...) {
+    function(req) {
+        new_data <- req$body
+        new_data <- vetiver_type_convert(new_data, vetiver_model$ptype)
+        h2o::h2o.predict(vetiver_model$model, h2o::as.h2o(new_data)) |>
+            h2o::as.dataframe() |>
+            dplyr::select(h2o::getParms()$y) |>
+            as.character()
+    }
+}
+
+# H2OMultinomialModel
+
+#' @rdname vetiver_create_description
+#' @export
+vetiver_create_description.H2OMultinomialModel <- function(model) {
+    vetiver_create_description_h2o_default(model)
+}
+
+#' @rdname vetiver_create_meta
+#' @export
+vetiver_create_meta.H2OMultinomialModel <- function(model, metadata) {
+    vetiver_create_meta_h2o_default(model, metadata)
+}
+
+#' @rdname vetiver_create_ptype
+#' @export
+vetiver_ptype.H2OMultinomialModel <- function(model, ...) {
+    vetiver_ptype_h2o_default(model, ...)
+}
+
+#' @rdname model_package
+#' @export
+model_package.H2OMultinomialModel <- function(model) {
+    model_package_h2o_default(model)
+}
+
+#' @rdname model_unpackage
+#' @export
+model_unpackage.H2OMultinomialModel <- function(model) {
+    model_unpackage_h2o_default(model)
+}
+
+#' @rdname handler_startup
+#' @export
+handler_startup.H2OMultinomialModel <- function(vetiver_model) {
+    handler_startup_h2o_default(vetiver_model)
+}
+
+#' @rdname handler_predict
+#' @export
+handler_predict.H2OMultinomialModel <- function(vetiver_model, ...) {
+    handler_predict_h2o_default(vetiver_model, ...)
+}
+
+# H2ORegressionModel
+
+#' @rdname vetiver_create_description
+#' @export
+vetiver_create_description.H2ORegressionModel <- function(model) {
+    vetiver_create_description_h2o_default(model)
+}
+
+#' @rdname vetiver_create_meta
+#' @export
+vetiver_create_meta.H2ORegressionModel <- function(model, metadata) {
+    vetiver_create_meta_h2o_default(model, metadata)
+}
+
+#' @rdname vetiver_create_ptype
+#' @export
+vetiver_ptype.H2ORegressionModel <- function(model, ...) {
+    vetiver_ptype_h2o_default(model, ...)
+}
+
+#' @rdname model_package
+#' @export
+model_package.H2ORegressionModel <- function(model) {
+    model_package_h2o_default(model)
+}
+
+#' @rdname model_unpackage
+#' @export
+model_unpackage.H2ORegressionModel <- function(model) {
+    model_unpackage_h2o_default(model)
+}
+
 #' @rdname handler_startup
 #' @export
 handler_startup.H2ORegressionModel <- function(vetiver_model) {
-    attach_pkgs(vetiver_model$metadata$required_pkgs)
+    handler_startup_h2o_default(vetiver_model)
 }
 
-#' @rdname handler_startup
+#' @rdname handler_predict
 #' @export
 handler_predict.H2ORegressionModel <- function(vetiver_model, ...) {
-    # FIXME: check if we need to convert input types (e.g. "1" to 1, "true" to T, etc.)
-    # use h2o predict function woohoo :)
+    handler_predict_h2o_default(vetiver_model, ...)
 }
-
-# a list of other H2O model classes we may want to add:
-# H2OAutoEncoderModel
-# H2OBinomialModel
-# H2OBinomialUpliftModel
-# H2OClusteringModel
-# H2ODimReductionModel
-# H2OOrdinalModel
-# H2OWordEmbeddingModel
