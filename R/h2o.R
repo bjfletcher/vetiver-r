@@ -12,7 +12,7 @@ vetiver_create_description_h2o_default <- function(model) {
 }
 
 vetiver_create_meta_h2o_default <- function(model, metadata) {
-    metadata$model_class = class(model)
+    metadata$h2o_model_class = class(model)
     vetiver_meta(metadata, required_pkgs = c("h2o"))
 }
 
