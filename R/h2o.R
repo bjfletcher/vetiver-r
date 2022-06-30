@@ -1,12 +1,3 @@
-# a list of other H2O model classes we may want to add:
-# H2OAutoEncoderModel
-# H2OBinomialModel
-# H2OBinomialUpliftModel
-# H2OClusteringModel
-# H2ODimReductionModel
-# H2OOrdinalModel
-# H2OWordEmbeddingModel
-
 #' @rdname vetiver_create_description
 #' @export
 vetiver_create_description.h2o <- function(model) {
