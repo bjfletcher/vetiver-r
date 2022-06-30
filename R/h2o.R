@@ -6,7 +6,7 @@ vetiver_create_description.h2o <- function(model) {
 
 #' @rdname vetiver_create_meta
 #' @export
-vetiver_create_meta.h2odefault <- function(model, metadata) {
+vetiver_create_meta.h2o <- function(model, metadata) {
     metadata$h2o_model_class = class(model)
     vetiver_meta(metadata, required_pkgs = c("h2o"))
 }
