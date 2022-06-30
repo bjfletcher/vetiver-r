@@ -7,16 +7,22 @@
 # H2OOrdinalModel
 # H2OWordEmbeddingModel
 
-vetiver_create_description_h2o_default <- function(model) {
+#' @rdname vetiver_create_description
+#' @export
+vetiver_create_description.h2o <- function(model) {
     paste('A H2O', class(model), 'model')
 }
 
-vetiver_create_meta_h2o_default <- function(model, metadata) {
+#' @rdname vetiver_create_meta
+#' @export
+vetiver_create_meta.h2odefault <- function(model, metadata) {
     metadata$h2o_model_class = class(model)
     vetiver_meta(metadata, required_pkgs = c("h2o"))
 }
 
-vetiver_ptype_h2o_default <- function(model, ...) {
+#' @rdname vetiver_ptype
+#' @export
+vetiver_ptype.h2o <- function(model, ...) {
     rlang::check_dots_used()
     dots <- list(...)
     check_ptype_data(dots)
@@ -26,7 +32,9 @@ vetiver_ptype_h2o_default <- function(model, ...) {
         tibble::as_tibble()
 }
 
-model_package_h2o_default <- function(model) {
+#' @rdname model_package
+#' @export
+model_package.h2o <- function(model) {
     f <- tempfile()
     h2o::h2o.saveModel(model, path = dirname(f), filename = basename(f))
     file_size <- file.info(f)$size
@@ -37,7 +45,9 @@ model_package_h2o_default <- function(model) {
     structure(raw_model, class = class(model))
 }
 
-model_unpackage_h2o_default <- function(model) {
+#' @rdname model_unpackage
+#' @export
+model_unpackage.h2o <- function(model) {
     model <- structure(model, class = NULL) # get the original object
     f <- tempfile()
     fd <- file(f, 'wb')
@@ -48,12 +58,16 @@ model_unpackage_h2o_default <- function(model) {
     loaded_model
 }
 
-handler_startup_h2o_default <- function(vetiver_model) {
+#' @rdname handler_startup
+#' @export
+handler_startup.h2o <- function(vetiver_model) {
     attach_pkgs(vetiver_model$metadata$required_pkgs)
     h2o::h2o.init()
 }
 
-handler_predict_h2o_default <- function(vetiver_model, ...) {
+#' @rdname handler_predict
+#' @export
+handler_predict.h2o <- function(vetiver_model, ...) {
     function(req) {
         new_data <- req$body
         new_data <- vetiver_type_convert(new_data, vetiver_model$ptype)
@@ -62,92 +76,4 @@ handler_predict_h2o_default <- function(vetiver_model, ...) {
             dplyr::select(h2o::getParms()$y) |>
             as.character()
     }
-}
-
-# H2OMultinomialModel
-
-#' @rdname vetiver_create_description
-#' @export
-vetiver_create_description.H2OMultinomialModel <- function(model) {
-    vetiver_create_description_h2o_default(model)
-}
-
-#' @rdname vetiver_create_meta
-#' @export
-vetiver_create_meta.H2OMultinomialModel <- function(model, metadata) {
-    vetiver_create_meta_h2o_default(model, metadata)
-}
-
-#' @rdname vetiver_create_ptype
-#' @export
-vetiver_ptype.H2OMultinomialModel <- function(model, ...) {
-    vetiver_ptype_h2o_default(model, ...)
-}
-
-#' @rdname model_package
-#' @export
-model_package.H2OMultinomialModel <- function(model) {
-    model_package_h2o_default(model)
-}
-
-#' @rdname model_unpackage
-#' @export
-model_unpackage.H2OMultinomialModel <- function(model) {
-    model_unpackage_h2o_default(model)
-}
-
-#' @rdname handler_startup
-#' @export
-handler_startup.H2OMultinomialModel <- function(vetiver_model) {
-    handler_startup_h2o_default(vetiver_model)
-}
-
-#' @rdname handler_predict
-#' @export
-handler_predict.H2OMultinomialModel <- function(vetiver_model, ...) {
-    handler_predict_h2o_default(vetiver_model, ...)
-}
-
-# H2ORegressionModel
-
-#' @rdname vetiver_create_description
-#' @export
-vetiver_create_description.H2ORegressionModel <- function(model) {
-    vetiver_create_description_h2o_default(model)
-}
-
-#' @rdname vetiver_create_meta
-#' @export
-vetiver_create_meta.H2ORegressionModel <- function(model, metadata) {
-    vetiver_create_meta_h2o_default(model, metadata)
-}
-
-#' @rdname vetiver_create_ptype
-#' @export
-vetiver_ptype.H2ORegressionModel <- function(model, ...) {
-    vetiver_ptype_h2o_default(model, ...)
-}
-
-#' @rdname model_package
-#' @export
-model_package.H2ORegressionModel <- function(model) {
-    model_package_h2o_default(model)
-}
-
-#' @rdname model_unpackage
-#' @export
-model_unpackage.H2ORegressionModel <- function(model) {
-    model_unpackage_h2o_default(model)
-}
-
-#' @rdname handler_startup
-#' @export
-handler_startup.H2ORegressionModel <- function(vetiver_model) {
-    handler_startup_h2o_default(vetiver_model)
-}
-
-#' @rdname handler_predict
-#' @export
-handler_predict.H2ORegressionModel <- function(vetiver_model, ...) {
-    handler_predict_h2o_default(vetiver_model, ...)
 }
